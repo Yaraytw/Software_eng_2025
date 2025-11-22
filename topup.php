@@ -29,12 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Update balance
         $stmt = $conn->prepare("UPDATE memberCashCard SET balance = balance + ?, lastTopUpDate = NOW(), lastTopUpAmount = ? WHERE memberID = ?");
         $stmt->bind_param("ddi", $amount, $amount, $_SESSION['memberID']);
+        $stmt->execute();
         
-        if ($stmt->execute()) {
+        if ($stmt->affected_rows > 0) {
             $success = 'Successfully topped up $' . number_format($amount, 2);
             $currentBalance += $amount;
         } else {
-            $error = 'Top-up failed. Please try again.';
+            $error = 'Top-up failed. Cash card not found. Please contact support.';
         }
         
         $stmt->close();

@@ -39,16 +39,19 @@ $checkSeats->close();
 
 if ($seatCount == 0) {
     // Generate seats (10 seats per row)
-    $rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    $rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
     $seatsPerRow = 10;
-    $totalRows = ceil($showing['totalSeats'] / $seatsPerRow);
+    $totalSeats = $showing['totalSeats'];
     
     $insertStmt = $conn->prepare("INSERT INTO seatCondition (showingID, seatRow, seatNumber, seatStatus) VALUES (?, ?, ?, 'available')");
     
-    for ($r = 0; $r < min($totalRows, count($rows)); $r++) {
-        for ($s = 1; $s <= $seatsPerRow; $s++) {
+    $seatsCreated = 0;
+    for ($r = 0; $r < count($rows) && $seatsCreated < $totalSeats; $r++) {
+        $seatsInThisRow = min($seatsPerRow, $totalSeats - $seatsCreated);
+        for ($s = 1; $s <= $seatsInThisRow; $s++) {
             $insertStmt->bind_param("isi", $showingID, $rows[$r], $s);
             $insertStmt->execute();
+            $seatsCreated++;
         }
     }
     $insertStmt->close();
@@ -87,11 +90,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 // Update seats
                 $updateSeatStmt = $conn->prepare("UPDATE seatCondition SET seatStatus = 'sold', bookingID = ? WHERE showingID = ? AND seatID = ? AND seatStatus = 'available'");
+                $seatsUpdated = 0;
                 foreach ($selectedSeats as $seatID) {
                     $updateSeatStmt->bind_param("iii", $bookingID, $showingID, $seatID);
                     $updateSeatStmt->execute();
+                    $seatsUpdated += $updateSeatStmt->affected_rows;
                 }
                 $updateSeatStmt->close();
+                
+                // Verify all seats were successfully reserved
+                if ($seatsUpdated !== count($selectedSeats)) {
+                    throw new Exception('Some seats are no longer available');
+                }
                 
                 // Update showing available seats
                 $updateShowingStmt = $conn->prepare("UPDATE showing SET availableSeats = availableSeats - ? WHERE showingID = ?");

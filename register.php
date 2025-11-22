@@ -45,20 +45,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Hash password
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                 
-                // Insert new member
-                $stmt = $conn->prepare("INSERT INTO memberProfile (username, password, email, fullName, phoneNumber) VALUES (?, ?, ?, ?, ?)");
-                $stmt->bind_param("sssss", $username, $hashedPassword, $email, $fullName, $phoneNumber);
+                // Start transaction
+                $conn->begin_transaction();
                 
-                if ($stmt->execute()) {
+                try {
+                    // Insert new member
+                    $stmt = $conn->prepare("INSERT INTO memberProfile (username, password, email, fullName, phoneNumber) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->bind_param("sssss", $username, $hashedPassword, $email, $fullName, $phoneNumber);
+                    $stmt->execute();
                     $memberID = $conn->insert_id;
+                    $stmt->close();
                     
                     // Create cash card for new member
                     $stmt = $conn->prepare("INSERT INTO memberCashCard (memberID, balance) VALUES (?, 0.00)");
                     $stmt->bind_param("i", $memberID);
                     $stmt->execute();
+                    $stmt->close();
                     
+                    $conn->commit();
                     $success = 'Registration successful! You can now login.';
-                } else {
+                } catch (Exception $e) {
+                    $conn->rollback();
                     $error = 'Registration failed. Please try again.';
                 }
             }
