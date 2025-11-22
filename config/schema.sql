@@ -166,7 +166,10 @@ INSERT INTO showing (movieID, cinemaID, theaterID, showDate, showTime, price, av
 (3, 2, 4, '2025-11-27', '16:00:00', 400.00, 80, 'available'),
 (3, 3, 5, '2025-11-27', '19:00:00', 320.00, 100, 'available');
 
--- Sample member (password is 'password123' hashed with bcrypt-like hash)
+-- Sample member for testing/demo purposes
+-- Username: demouser, Password: password123
+-- Note: For production, change this password or remove this demo account
+-- Password hash generated using: password_hash('password123', PASSWORD_DEFAULT)
 INSERT INTO memberProfile (username, email, fullName, phoneNumber, password, status) VALUES
 ('demouser', 'demo@example.com', 'Demo User', '0912-345-678', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'active');
 

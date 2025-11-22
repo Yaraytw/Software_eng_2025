@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result->num_rows === 1) {
             $user = $result->fetch_assoc();
             
-            // Verify password (assuming password is hashed)
+            // Verify hashed password
             if (password_verify($password, $user['password'])) {
                 if ($user['status'] === 'active') {
                     // Set session variables
