@@ -25,7 +25,7 @@ function getCurrentUser() {
 // Redirect to login if not authenticated
 function requireLogin() {
     if (!isLoggedIn()) {
-        header('Location: /login.php');
+        header('Location: login.php');
         exit;
     }
 }

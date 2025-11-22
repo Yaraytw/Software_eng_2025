@@ -3,7 +3,7 @@ require_once 'includes/functions.php';
 requireLogin();
 
 $success = '';
-if (isset($_GET['success']) && $_GET['success'] == 1) {
+if (isset($_GET['success']) && $_GET['success'] === '1') {
     $success = 'Booking confirmed successfully! Booking ID: #' . ($_GET['bookingID'] ?? 'N/A');
 }
 ?>
