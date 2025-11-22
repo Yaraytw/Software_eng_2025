@@ -5,6 +5,8 @@ requireLogin();
 $success = '';
 if (isset($_GET['success']) && $_GET['success'] === '1') {
     $success = 'Booking confirmed successfully! Booking ID: #' . ($_GET['bookingID'] ?? 'N/A');
+} elseif (isset($_GET['refunded']) && $_GET['refunded'] === '1') {
+    $success = 'Refund processed successfully! The amount has been credited to your cash card.';
 }
 ?>
 <!DOCTYPE html>
