@@ -92,6 +92,15 @@ The system uses the following database tables:
    http://localhost/
    ```
 
+7. **Verify installation** (Optional)
+   
+   You can test your installation by visiting:
+   ```
+   http://localhost/install_test.php
+   ```
+   
+   This page will check if all requirements are met and the database is properly configured.
+
 ## Demo Account
 
 The system comes with a pre-configured demo account:
@@ -124,6 +133,7 @@ Software_eng_2025/
 ├── select_seat.php        # Seat selection and booking page
 ├── inquiry.php            # View bookings page
 ├── refund.php             # Refund request page
+├── install_test.php       # Installation verification tool
 └── README.md              # This file
 ```
 
