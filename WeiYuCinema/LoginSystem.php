@@ -48,6 +48,21 @@ class LoginSystem {
         return false;
     }
 
+    // L7: ReturnHint (取得使用者的密碼提示題目)
+    public function ReturnHint($email) {
+        // 假設 memberPwdQuestion 表存在，或直接從 memberProfile 拿 hintId 轉文字
+        // 這裡示範直接回傳 HintId，前端再轉成文字，或是這裡做 Join
+        $query = "SELECT memberPwdHintId FROM " . $this->table_name . " WHERE memberEmail = :email";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            return ["status" => true, "hintId" => $row['memberPwdHintId']];
+        }
+        return ["status" => false, "message" => "查無此帳號"];
+    }
+    
     // L11: Logout
     public function Logout() {
         session_destroy();

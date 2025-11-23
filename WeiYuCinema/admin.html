@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>後台管理系統 - 威宇影城</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #eef; }
+        .box { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; }
+        input, select { padding: 8px; margin: 5px; }
+        button { padding: 8px 15px; cursor: pointer; background: #333; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <h1>⚙️ 威宇影城 - 管理者後台</h1>
+
+    <div class="box">
+        <h3>🎬 新增電影</h3>
+        <input type="text" id="mName" placeholder="電影名稱 (例如: 復仇者聯盟)">
+        <select id="mGrade">
+            <option value="1">普遍級</option>
+            <option value="2">保護級</option>
+            <option value="3">輔導級</option>
+            <option value="4">限制級</option>
+        </select>
+        <button onclick="addMovie()">新增</button>
+    </div>
+
+    <div class="box">
+        <h3>📅 新增場次</h3>
+        <input type="text" id="sMovieId" placeholder="電影ID">
+        <input type="date" id="sDate">
+        <input type="time" id="sTime">
+        <button onclick="addShowing()">新增場次 (自動開啟20座位)</button>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        async function addMovie() {
+            const name = document.getElementById('mName').value;
+            const grade = document.getElementById('mGrade').value;
+            const res = await callApi('admin_add_movie', { name, grade });
+            alert(res.status ? "新增成功" : "失敗");
+        }
+
+        async function addShowing() {
+            const movieId = document.getElementById('sMovieId').value;
+            const date = document.getElementById('sDate').value;
+            const time = document.getElementById('sTime').value;
+            const res = await callApi('admin_add_showing', { movieId, date, time });
+            alert(res.status ? "新增成功" : "失敗");
+        }
+    </script>
+</body>
+</html>

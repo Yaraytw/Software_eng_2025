@@ -89,7 +89,7 @@ class SignUpSystem {
                   VALUES (:id, :name, :email, :pwd, :phone, :birth, :hintId, :hintAns)";
         
         $stmt = $this->conn->prepare($query);
-
+        
         // 密碼加密 (安全需求)
         $hashedPwd = password_hash($data['memberPwd'], PASSWORD_DEFAULT);
 
@@ -101,7 +101,8 @@ class SignUpSystem {
         $stmt->bindParam(':birth', $data['memberBirth']);
         $stmt->bindParam(':hintId', $data['memberPwdHintId']);
         $stmt->bindParam(':hintAns', $data['memberPwdHintAns']);
-
+        $stmt->bindParam(':payAcct', $data['memberPayAccount']);
+        
         return $stmt->execute();
     }
 // 在 SignUpSystem.php 類別中新增以下方法

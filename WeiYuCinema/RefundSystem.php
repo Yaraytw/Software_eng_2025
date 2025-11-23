@@ -29,16 +29,19 @@ class RefundSystem {
         // 這裡簡化邏輯：假設皆可退，實際可根據 ticketTypeId 判斷
 
         // R5: GetPayWay (搜尋付款方式)
-        // 假設 bookingRecord 有紀錄付款方式，或透過 PayAccount 判斷
+        // 這裡呼叫輔助函式判斷付款方式 (bank 或 card)
+        $paymentMethod = $this->GetPayWay($orderNumber);
         
         $refundSuccess = false;
         
-        // R6 & R7: 退款流程
-        // 假設我們從 memberProfile 判斷或 bookingRecord 紀錄的付款方式
-        // 這裡示範退回儲值卡 (R7)
-        $refundSuccess = $this->RefundToCard($userId, $orderInfo['totalPrice']);
-        
-        // 若是銀行卡 (R6)，通常是呼叫銀行 API 退刷，這裡省略
+        // 依照付款方式執行對應退款流程
+        if ($paymentMethod == 'card') {
+            // R7: 退回儲值卡
+            $refundSuccess = $this->RefundToCard($userId, $orderInfo['totalPrice']);
+        } else {
+            // R6: 退回銀行卡
+            $refundSuccess = $this->RefundToBank($userId, $orderInfo['totalPrice']);
+        }
 
         if ($refundSuccess) {
             // R8: RecordRefund (寫入資料庫 - 更新狀態)
@@ -48,6 +51,10 @@ class RefundSystem {
             return $this->DisplayRefundError("退款處理失敗"); // R10
         }
     }
+
+    // =================================================================
+    // 輔助與核心邏輯函式
+    // =================================================================
 
     // R3: CheckTwoHour
     private function CheckTwoHour($date, $time) {
@@ -63,7 +70,22 @@ class RefundSystem {
         return false; // 不可退票
     }
 
-    // R7: RefundToCard
+    // R5: GetPayWay (判斷付款方式)
+    private function GetPayWay($orderNumber) {
+        // 由於規格書資料庫設計未明確規範「付款方式」存在哪張表
+        // 這裡模擬：若 memberCashCard 有扣款紀錄則為 card，否則為 bank
+        // 或是根據你的實作邏輯，預設回傳 'card' 方便測試
+        return 'card'; 
+    }
+
+    // R6: RefundToBank (模擬銀行退款)
+    private function RefundToBank($memberId, $amount) {
+        // 實際專案會呼叫銀行 API (例如 Stripe, PayPal, 綠界)
+        // 這裡直接回傳 true 代表銀行端退刷成功
+        return true; 
+    }
+
+    // R7: RefundToCard (儲值卡退款)
     private function RefundToCard($memberId, $amount) {
         $query = "UPDATE memberCashCard SET balance = balance + :amount WHERE memberId = :mid";
         $stmt = $this->conn->prepare($query);
@@ -72,7 +94,7 @@ class RefundSystem {
         return $stmt->execute();
     }
 
-    // R8: RecordRefund
+    // R8: RecordRefund (更新訂單狀態)
     private function RecordRefund($orderNumber) {
         // 假設 OrderStatusId: 1=已支付, 2=已退票
         $query = "UPDATE bookingRecord SET orderStatusId = 2 WHERE orderNumber = :ordNo";
@@ -93,12 +115,12 @@ class RefundSystem {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // R9
+    // R9: 顯示成功
     private function DisplayRefundSuccess() {
         return ["status" => true, "message" => "退票成功"];
     }
 
-    // R10
+    // R10: 顯示失敗
     private function DisplayRefundError($msg) {
         return ["status" => false, "message" => $msg];
     }
