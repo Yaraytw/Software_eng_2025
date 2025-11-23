@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>威宇影城 - 會員登入/註冊</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding-top: 50px; }
+        .container { width: 400px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #ddd; }
+        .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; }
+        .tab.active { border-bottom: 2px solid #007bff; color: #007bff; font-weight: bold; }
+        .form-group { margin-bottom: 15px; }
+        input { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align:center;">威宇影城售票系統</h2>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('login')">登入</div>
+        <div class="tab" onclick="switchTab('register')">註冊</div>
+    </div>
+
+    <!-- 登入表單 -->
+    <div id="loginForm">
+        <div class="form-group">
+            <label>帳號 (Email)</label>
+            <input type="email" id="loginEmail" placeholder="請輸入信箱">
+        </div>
+        <div class="form-group">
+            <label>密碼</label>
+            <input type="password" id="loginPwd" placeholder="請輸入密碼">
+        </div>
+        <button onclick="doLogin()">登入</button>
+        <p style="text-align:right; font-size:12px;"><a href="#">忘記密碼?</a></p>
+    </div>
+
+    <!-- 註冊表單 -->
+    <div id="registerForm" class="hidden">
+        <div class="form-group"><input type="text" id="regId" placeholder="身分證字號"></div>
+        <div class="form-group"><input type="text" id="regName" placeholder="姓名"></div>
+        <div class="form-group"><input type="email" id="regEmail" placeholder="Email"></div>
+        <div class="form-group"><input type="password" id="regPwd" placeholder="密碼"></div>
+        <div class="form-group"><input type="password" id="regPwd2" placeholder="確認密碼"></div>
+        <div class="form-group"><input type="text" id="regPhone" placeholder="手機號碼 (09xxxxxxxx)"></div>
+        <div class="form-group"><input type="date" id="regBirth"></div>
+        <!-- 簡化：省略忘記密碼題目選單 -->
+        <button onclick="doRegister()">註冊</button>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tab === 'login' ? 'loginForm' : 'registerForm').classList.remove('hidden');
+        document.getElementById(tab === 'login' ? 'registerForm' : 'loginForm').classList.add('hidden');
+        event.target.classList.add('active');
+    }
+
+    async function doLogin() {
+        const email = document.getElementById('loginEmail').value;
+        const pwd = document.getElementById('loginPwd').value;
+
+        // 呼叫後端 L1 MainLogin
+        const res = await callApi('login', { account: email, pwd: pwd });
+        alert(res.message);
+        if (res.status) {
+            // 假設後端登入成功會將 user 存在 session，前端轉址到首頁
+            window.location.href = 'dashboard.html';
+        }
+    }
+
+    async function doRegister() {
+        const data = {
+            memberId: document.getElementById('regId').value,
+            memberName: document.getElementById('regName').value,
+            memberEmail: document.getElementById('regEmail').value,
+            memberPwd: document.getElementById('regPwd').value,
+            memberPwdConfirm: document.getElementById('regPwd2').value,
+            memberPhone: document.getElementById('regPhone').value,
+            memberBirth: document.getElementById('regBirth').value,
+            memberPwdHintId: 1, // 預設
+            memberPwdHintAns: 'Default'
+        };
+
+        // 呼叫後端 S1 MainSign
+        const res = await callApi('register', data);
+        alert(res.message);
+        if (res.status === 'success') {
+            switchTab('login');
+        }
+    }
+</script>
+</body>
+</html>
