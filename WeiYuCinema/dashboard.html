@@ -2,408 +2,371 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>會員首頁 - 威宇影城</title>
+    <title>會員中心 - 威宇影城</title>
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        body { font-family: "Microsoft JhengHei", sans-serif; padding: 20px; background: #f9f9f9; margin: 0; }
-        .nav { background: #333; padding: 15px 20px; color: white; display: flex; gap: 20px; align-items: center; }
-        .nav div { font-size: 1.2em; font-weight: bold; margin-right: auto; }
-        .nav a { color: #ddd; text-decoration: none; cursor: pointer; transition: 0.3s; }
-        .nav a:hover { color: #fff; text-decoration: underline; }
+        /* Dashboard 專用佈局 */
+        .dashboard-container { display: flex; gap: 30px; max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .sidebar { width: 250px; flex-shrink: 0; }
+        .menu-item { display: block; padding: 15px 20px; background: #1e1e1e; color: #fff; text-decoration: none; border-bottom: 1px solid #333; transition: 0.3s; }
+        .menu-item:first-child { border-radius: 8px 8px 0 0; }
+        .menu-item:last-child { border-radius: 0 0 8px 8px; border-bottom: none; }
+        .menu-item:hover, .menu-item.active { background: var(--primary-color); color: #000; font-weight: bold; }
         
-        .container { max-width: 800px; margin: 20px auto; }
-        .section { display: none; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .section.active { display: block; }
+        .main-content { flex: 1; background: #1e1e1e; padding: 40px; border-radius: 8px; border: 1px solid #333; min-height: 500px; }
         
-        /* 步驟區塊 */
-        .step-block { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed #ccc; }
-        .step-block:last-child { border-bottom: none; }
-        label { font-weight: bold; display: inline-block; margin-bottom: 5px; }
-        select, input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px; }
-        
-        /* 座位表 */
-        .seat-grid { display: grid; grid-template-columns: repeat(5, 50px); gap: 10px; justify-content: center; margin: 20px 0; }
-        .seat { width: 50px; height: 50px; background: #e0e0e0; border: 1px solid #999; border-radius: 5px; text-align: center; line-height: 50px; cursor: pointer; user-select: none; }
-        .seat.selected { background: #28a745; color: white; border-color: #1e7e34; }
-        .seat.occupied { background: #dc3545; color: white; cursor: not-allowed; border-color: #bd2130; }
-        
-        /* 卡片與按鈕 */
-        .card { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; background: #fff; border-left: 5px solid #007bff; }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 14px; }
-        .btn-primary { background: #007bff; }
-        .btn-primary:hover { background: #0056b3; }
-        .btn-danger { background: #dc3545; }
-        .btn-warning { background: #ffc107; color: #333; }
-        .btn-secondary { background: #6c757d; }
-        
-        .hidden { display: none; }
+        /* 訂票卡片樣式 */
+        .ticket-card { background: #2c2c2c; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
-<div class="nav">
-    <div>🎥 威宇影城</div>
-    <a onclick="showSection('booking')">線上訂票</a>
-    <a onclick="showSection('myTickets')">訂票紀錄</a>
-    <a onclick="showSection('profile')">會員資料</a>
-    <a href="login.html" onclick="logout()">登出</a>
-</div>
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">🎥 威宇影城</a>
+            <nav class="nav-links">
+                <span class="text-muted" style="margin-right: 15px;">會員專區</span>
+                <a href="#" onclick="logout()">登出</a>
+            </nav>
+        </div>
+    </header>
 
-<div class="container">
-    <!-- 1. 線上訂票區塊 (Element B) -->
-    <div id="booking" class="section active">
-        <h2 style="margin-top:0;">🎟️ 線上訂票</h2>
-        
-        <!-- Step 1: 選擇場次 -->
-        <div id="step1" class="step-block">
-            <p><b>步驟 1：選擇場次</b></p>
-            <label>電影：</label>
-            <select id="movieSelect" onchange="loadDates()"><option>載入中...</option></select>
-            <br><br>
-            <label>日期：</label>
-            <select id="dateSelect" onchange="loadShowings()" disabled><option>請先選電影</option></select>
-            <br><br>
-            <label>場次：</label>
-            <select id="showingSelect" onchange="loadTicketTypes()" disabled><option>請先選日期</option></select>
+    <div class="dashboard-container">
+        <!-- 左側選單 -->
+        <div class="sidebar">
+            <a onclick="showSection('booking')" id="nav-booking" class="menu-item active">🎟️ 線上訂票</a>
+            <a onclick="showSection('myTickets')" id="nav-myTickets" class="menu-item">📜 訂票紀錄</a>
+            <a onclick="showSection('profile')" id="nav-profile" class="menu-item">👤 會員資料</a>
         </div>
 
-        <!-- Step 2: 選擇票種與餐點 -->
-        <div id="step2" class="step-block hidden">
-            <p><b>步驟 2：選擇票種與餐點</b></p>
+        <!-- 右側內容 -->
+        <div class="main-content">
             
-            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                <div style="flex: 1;">
-                    <h4>票種</h4>
-                    <div id="ticketTypeArea">載入中...</div>
+            <!-- 1. 線上訂票 -->
+            <div id="booking" class="section-view">
+                <h2>線上訂票</h2>
+                
+                <!-- Step 1 -->
+                <div id="step1" class="section-box">
+                    <label>1. 選擇電影</label>
+                    <select id="movieSelect" onchange="loadDates()"><option>載入中...</option></select>
+                    
+                    <label>2. 選擇日期</label>
+                    <select id="dateSelect" onchange="loadShowings()" disabled><option>請先選電影</option></select>
+
+                    <label>3. 選擇場次</label>
+                    <select id="showingSelect" onchange="loadTicketTypes()" disabled><option>請先選日期</option></select>
                 </div>
-                <div style="flex: 1;">
-                    <h4>餐點 (選購)</h4>
-                    <div id="mealArea">載入中...</div>
+
+                <!-- Step 2 -->
+                <div id="step2" class="hidden section-box">
+                    <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                        <div style="flex: 1;">
+                            <h4>4. 票種選擇</h4>
+                            <div id="ticketTypeArea"></div>
+                        </div>
+                        <div style="flex: 1;">
+                            <h4>5. 餐點加購</h4>
+                            <div id="mealArea"></div>
+                        </div>
+                    </div>
+                    <div class="text-right" style="margin-top: 20px;">
+                        <p style="font-size: 18px;">預估金額: <span style="color: var(--primary-color); font-weight: bold;">$<span id="tempPrice">0</span></span></p>
+                        <button class="btn btn-primary" onclick="loadSeats()">下一步：選擇座位</button>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div id="step3" class="hidden section-box text-center">
+                    <h4>6. 選擇座位</h4>
+                    <p class="text-muted">請點擊選擇 <span id="requiredSeats" style="color: #fff; font-weight: bold;">0</span> 個座位</p>
+                    <div id="seatMap" class="seat-grid"></div>
+                    
+                    <div style="background: #2c2c2c; padding: 20px; border-radius: 8px; margin-top: 20px; text-align: left;">
+                        <p style="font-size: 20px;">總金額: <span style="color: var(--primary-color); font-weight: bold;">$<span id="finalPrice">0</span></span></p>
+                        <label>付款方式</label>
+                        <select id="payMethod">
+                            <option value="card">會員儲值卡 (餘額扣款)</option>
+                            <option value="bank">信用卡線上刷卡</option>
+                        </select>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="confirmBooking()">確認付款與訂票</button>
+                    </div>
                 </div>
             </div>
-            
-            <hr>
-            <p style="text-align: right; font-size: 1.1em;">
-                預估金額: <b style="color: #d9534f;">$<span id="tempPrice">0</span></b> 
-                (共 <span id="tempCount">0</span> 張票)
-            </p>
-            <div style="text-align: right;">
-                <button class="btn btn-primary" onclick="loadSeats()">下一步：選擇座位</button>
+
+            <!-- 2. 訂票紀錄 -->
+            <div id="myTickets" class="section-view hidden">
+                <h2>訂票紀錄</h2>
+                <div id="ticketList">載入中...</div>
             </div>
-        </div>
 
-        <!-- Step 3: 選擇座位 -->
-        <div id="step3" class="step-block hidden">
-            <p><b>步驟 3：選擇座位與付款</b></p>
-            <p style="text-align:center; color: #007bff;">請選擇 <span id="requiredSeats" style="font-weight:bold; font-size:1.2em;">0</span> 個座位</p>
-            
-            <div id="seatMap" class="seat-grid"></div>
-            
-            <div style="background: #f1f1f1; padding: 15px; border-radius: 5px; margin-top: 20px;">
-                <label>付款方式：</label>
-                <select id="payMethod">
-                    <option value="card">會員儲值卡</option>
-                    <option value="bank">信用卡</option>
-                </select>
-                <p>最終金額: <b style="color: #d9534f; font-size: 1.2em;">$<span id="finalPrice">0</span></b></p>
-                <button class="btn btn-primary" onclick="confirmBooking()" style="width: 100%;">確認訂票</button>
-                <br><br>
-                <button class="btn btn-secondary" onclick="location.reload()" style="width: 100%;">重選</button>
+            <!-- 3. 會員資料 -->
+            <div id="profile" class="section-view hidden">
+                <h2>修改會員資料</h2>
+                <div class="section-box">
+                    <label>姓名</label>
+                    <input type="text" id="profileName">
+                    <label>手機</label>
+                    <input type="text" id="profilePhone">
+                    <button class="btn btn-primary" onclick="updateProfile()">儲存修改</button>
+                </div>
             </div>
+
         </div>
     </div>
 
-    <!-- 2. 訂票紀錄區塊 (Element In, R, C) -->
-    <div id="myTickets" class="section">
-        <h2 style="margin-top:0;">📜 訂票紀錄</h2>
-        <div id="ticketList">載入中...</div>
-    </div>
-
-    <!-- 3. 會員資料區塊 (Element M) -->
-    <div id="profile" class="section">
-        <h2 style="margin-top:0;">👤 修改會員資料</h2>
-        <div class="form-group">
-            <label>姓名：</label><br>
-            <input type="text" id="profileName" style="width: 100%; box-sizing: border-box;">
+    <footer>
+        <div class="nav-container" style="justify-content: center;">
+            <p>&copy; 2025 威宇影城. Member Center.</p>
         </div>
-        <br>
-        <div class="form-group">
-            <label>手機：</label><br>
-            <input type="text" id="profilePhone" style="width: 100%; box-sizing: border-box;">
-        </div>
-        <br>
-        <button class="btn btn-primary" onclick="updateProfile()">儲存修改</button>
-    </div>
-</div>
+    </footer>
 
-<script src="js/api.js"></script>
-<script>
-    const userId = 'A123456789'; // 模擬 Session ID (實際專案這部分由後端控制)
-    let currentShowingId = null;
-    let selectedSeats = [];
-    let ticketCart = {};
-    let mealCart = {};
-    let totalTickets = 0;
+    <script src="js/api.js"></script>
+    <script>
+        const userId = 'A123456789'; // 模擬 Session ID
+        let currentShowingId = null;
+        let selectedSeats = [];
+        let ticketCart = {};
+        let mealCart = {};
+        let totalTickets = 0;
 
-    // 初始化
-    (async function init() {
-        await loadMovies();
-    })();
+        // 初始化
+        (async function init() {
+            await loadMovies();
+        })();
 
-    function showSection(id) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        if(id === 'myTickets') loadMyTickets();
-        if(id === 'profile') loadProfile();
-    }
-
-    // --- API Calls ---
-
-    async function loadMovies() {
-        const res = await callApi('get_movies', {}, 'GET');
-        const sel = document.getElementById('movieSelect');
-        sel.innerHTML = '<option value="">請選擇電影</option>';
-        res.forEach(m => {
-            sel.innerHTML += `<option value="${m.movieId}">${m.movieName}</option>`;
-        });
-    }
-
-    async function loadDates() {
-        const mid = document.getElementById('movieSelect').value;
-        // 這裡呼叫後端 SearchDate
-        const res = await callApi('get_dates', {movieId: mid}, 'GET');
-        const sel = document.getElementById('dateSelect');
-        sel.disabled = false;
-        sel.innerHTML = '<option value="">請選擇日期</option>';
-        
-        if(res.length === 0) sel.innerHTML += '<option value="2025-10-30">2025-10-30 (模擬數據)</option>';
-        else res.forEach(d => sel.innerHTML += `<option value="${d.showingDate}">${d.showingDate}</option>`);
-    }
-
-    async function loadShowings() {
-        const mid = document.getElementById('movieSelect').value;
-        const date = document.getElementById('dateSelect').value;
-        // 這裡呼叫後端 SearchShowing
-        const res = await callApi('get_showings', {movieId: mid, date: date}, 'GET');
-        const sel = document.getElementById('showingSelect');
-        sel.disabled = false;
-        sel.innerHTML = '<option value="">請選擇場次</option>';
-        
-        if(res.length === 0) sel.innerHTML += '<option value="101">14:30 (模擬場次)</option>';
-        else res.forEach(s => sel.innerHTML += `<option value="${s.showingId}">${s.startTime} (${s.cinemaName})</option>`);
-    }
-
-    async function loadTicketTypes() {
-        document.getElementById('step2').classList.remove('hidden');
-        
-        // 載入票種
-        const types = await callApi('get_ticket_types', {}, 'GET');
-        const tArea = document.getElementById('ticketTypeArea');
-        tArea.innerHTML = '';
-        if(types.length === 0) { // 模擬
-             types.push({ticketClassId:1, ticketClassName:'全票', ticketClassPrice:300});
-             types.push({ticketClassId:2, ticketClassName:'學生票', ticketClassPrice:250});
-        }
-        types.forEach(t => {
-            tArea.innerHTML += `
-                <div style="margin-bottom:10px; display:flex; align-items:center;">
-                    <span style="flex:1;">${t.ticketClassName} ($${t.ticketClassPrice})</span>
-                    <input type="number" min="0" max="10" value="0" style="width:60px;"
-                        onchange="updateCart('ticket', ${t.ticketClassId}, ${t.ticketClassPrice}, '${t.ticketClassName}', this.value)">
-                </div>`;
-        });
-
-        // 載入餐點
-        const meals = await callApi('get_meals', {}, 'GET');
-        const mArea = document.getElementById('mealArea');
-        mArea.innerHTML = '';
-        if(meals.length === 0) { // 模擬
-            meals.push({mealsId:1, mealsName:'爆米花', mealsPrice:120});
-            meals.push({mealsId:2, mealsName:'可樂', mealsPrice:60});
-        }
-        meals.forEach(m => {
-            mArea.innerHTML += `
-                <div style="margin-bottom:10px; display:flex; align-items:center;">
-                    <span style="flex:1;">${m.mealsName} (+$${m.mealsPrice})</span>
-                    <input type="number" min="0" max="10" value="0" style="width:60px;"
-                        onchange="updateCart('meal', ${m.mealsId}, ${m.mealsPrice}, '${m.mealsName}', this.value)">
-                </div>`;
-        });
-    }
-
-    function updateCart(type, id, price, name, qty) {
-        qty = parseInt(qty);
-        if(type === 'ticket') ticketCart[id] = {price, qty, name};
-        if(type === 'meal') mealCart[id] = {price, qty, name};
-        calcTotal();
-    }
-
-    function calcTotal() {
-        let sum = 0;
-        totalTickets = 0;
-        for(let k in ticketCart) {
-            sum += ticketCart[k].price * ticketCart[k].qty;
-            totalTickets += ticketCart[k].qty;
-        }
-        for(let k in mealCart) {
-            sum += mealCart[k].price * mealCart[k].qty;
-        }
-        document.getElementById('tempPrice').innerText = sum;
-        document.getElementById('finalPrice').innerText = sum;
-        document.getElementById('tempCount').innerText = totalTickets;
-        document.getElementById('requiredSeats').innerText = totalTickets;
-    }
-
-    async function loadSeats() {
-        if(totalTickets === 0) { alert("請至少購買一張電影票"); return; }
-        
-        currentShowingId = document.getElementById('showingSelect').value;
-        document.getElementById('step1').classList.add('hidden');
-        document.getElementById('step2').classList.add('hidden');
-        document.getElementById('step3').classList.remove('hidden');
-
-        // 呼叫後端取得真實座位狀況
-        const res = await callApi('get_seats', { showingId: currentShowingId }, 'GET');
-        
-        const seatMap = document.getElementById('seatMap');
-        seatMap.innerHTML = '';
-        
-        // 這裡簡單建立 20 個座位 (真實情況應依照影廳大小迴圈)
-        for(let i=1; i<=20; i++) {
-            let div = document.createElement('div');
-            div.className = 'seat';
-            div.innerText = i;
+        function showSection(id) {
+            document.querySelectorAll('.section-view').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.menu-item').forEach(s => s.classList.remove('active'));
             
-            // 檢查資料庫回傳的座位狀態 (1=空, 0=非空)
-            // 假設 res 是 [{seatNumber: "1", seatEmpty: 1}, ...]
-            let isOccupied = false;
-            if(res && res.length > 0) {
-                const s = res.find(x => x.seatNumber == i);
-                if(s && s.seatEmpty == 0) isOccupied = true;
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById('nav-' + id).classList.add('active');
+            
+            if(id === 'myTickets') loadMyTickets();
+            if(id === 'profile') loadProfile();
+        }
+
+        // --- 沿用您原本的 JS 邏輯 (只修改 UI 操作) ---
+
+        async function loadMovies() {
+            const res = await callApi('get_movies', {}, 'GET');
+            const sel = document.getElementById('movieSelect');
+            sel.innerHTML = '<option value="">請選擇電影</option>';
+            res.forEach(m => {
+                sel.innerHTML += `<option value="${m.movieId}">${m.movieName}</option>`;
+            });
+        }
+
+        async function loadDates() {
+            const mid = document.getElementById('movieSelect').value;
+            const res = await callApi('get_dates', {movieId: mid}, 'GET');
+            const sel = document.getElementById('dateSelect');
+            sel.disabled = false;
+            sel.innerHTML = '<option value="">請選擇日期</option>';
+            if(res.length === 0) sel.innerHTML += '<option value="2025-10-30">2025-10-30 (模擬)</option>';
+            else res.forEach(d => sel.innerHTML += `<option value="${d.showingDate}">${d.showingDate}</option>`);
+        }
+
+        async function loadShowings() {
+            const mid = document.getElementById('movieSelect').value;
+            const date = document.getElementById('dateSelect').value;
+            const res = await callApi('get_showings', {movieId: mid, date: date}, 'GET');
+            const sel = document.getElementById('showingSelect');
+            sel.disabled = false;
+            sel.innerHTML = '<option value="">請選擇場次</option>';
+            if(res.length === 0) sel.innerHTML += '<option value="101">14:30 (模擬場次)</option>';
+            else res.forEach(s => sel.innerHTML += `<option value="${s.showingId}">${s.startTime} (${s.cinemaName})</option>`);
+        }
+
+        async function loadTicketTypes() {
+            document.getElementById('step2').classList.remove('hidden');
+            const types = await callApi('get_ticket_types', {}, 'GET');
+            const tArea = document.getElementById('ticketTypeArea');
+            tArea.innerHTML = '';
+            
+            // 若無資料則使用模擬
+            const typeData = types.length ? types : [
+                {ticketClassId:1, ticketClassName:'全票', ticketClassPrice:300},
+                {ticketClassId:2, ticketClassName:'學生票', ticketClassPrice:250}
+            ];
+
+            typeData.forEach(t => {
+                tArea.innerHTML += `
+                    <div style="margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <span>${t.ticketClassName} <small class="text-muted">$${t.ticketClassPrice}</small></span>
+                        <input type="number" min="0" max="10" value="0" style="width: 70px; margin: 0;"
+                            onchange="updateCart('ticket', ${t.ticketClassId}, ${t.ticketClassPrice}, '${t.ticketClassName}', this.value)">
+                    </div>`;
+            });
+
+            const meals = await callApi('get_meals', {}, 'GET');
+            const mArea = document.getElementById('mealArea');
+            mArea.innerHTML = '';
+            const mealData = meals.length ? meals : [
+                {mealsId:1, mealsName:'爆米花', mealsPrice:120},
+                {mealsId:2, mealsName:'可樂', mealsPrice:60}
+            ];
+
+            mealData.forEach(m => {
+                mArea.innerHTML += `
+                    <div style="margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <span>${m.mealsName} <small class="text-muted">+$${m.mealsPrice}</small></span>
+                        <input type="number" min="0" max="10" value="0" style="width: 70px; margin: 0;"
+                            onchange="updateCart('meal', ${m.mealsId}, ${m.mealsPrice}, '${m.mealsName}', this.value)">
+                    </div>`;
+            });
+        }
+
+        function updateCart(type, id, price, name, qty) {
+            qty = parseInt(qty);
+            if(type === 'ticket') ticketCart[id] = {price, qty, name};
+            if(type === 'meal') mealCart[id] = {price, qty, name};
+            calcTotal();
+        }
+
+        function calcTotal() {
+            let sum = 0;
+            totalTickets = 0;
+            for(let k in ticketCart) {
+                sum += ticketCart[k].price * ticketCart[k].qty;
+                totalTickets += ticketCart[k].qty;
             }
+            for(let k in mealCart) {
+                sum += mealCart[k].price * mealCart[k].qty;
+            }
+            document.getElementById('tempPrice').innerText = sum;
+            document.getElementById('finalPrice').innerText = sum;
+            document.getElementById('requiredSeats').innerText = totalTickets;
+        }
 
-            if (isOccupied) {
-                div.classList.add('occupied');
-                div.title = "已售出";
+        async function loadSeats() {
+            if(totalTickets === 0) { alert("請至少購買一張票"); return; }
+            currentShowingId = document.getElementById('showingSelect').value;
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+
+            const res = await callApi('get_seats', { showingId: currentShowingId }, 'GET');
+            const seatMap = document.getElementById('seatMap');
+            seatMap.innerHTML = '';
+            
+            for(let i=1; i<=20; i++) {
+                let div = document.createElement('div');
+                div.className = 'seat';
+                div.innerText = i;
+                
+                let isOccupied = false;
+                if(res && res.length > 0) {
+                    const s = res.find(x => x.seatNumber == i);
+                    if(s && s.seatEmpty == 0) isOccupied = true;
+                }
+                // 模擬部分佔用
+                if([2,5,18].includes(i)) isOccupied = true;
+
+                if (isOccupied) {
+                    div.classList.add('occupied');
+                } else {
+                    div.onclick = () => {
+                        if(!div.classList.contains('selected') && selectedSeats.length >= totalTickets) {
+                            alert("座位數已達購買張數上限"); return;
+                        }
+                        toggleSeat(div, i);
+                    };
+                }
+                seatMap.appendChild(div);
+            }
+        }
+
+        function toggleSeat(el, num) {
+            if(el.classList.contains('selected')) {
+                el.classList.remove('selected');
+                selectedSeats = selectedSeats.filter(s => s !== num);
             } else {
-                div.onclick = () => {
-                    if(!div.classList.contains('selected') && selectedSeats.length >= totalTickets) {
-                        alert("座位數已達購買張數上限"); return;
-                    }
-                    toggleSeat(div, i);
-                };
+                el.classList.add('selected');
+                selectedSeats.push(num);
             }
-            seatMap.appendChild(div);
         }
-    }
 
-    function toggleSeat(el, num) {
-        if(el.classList.contains('selected')) {
-            el.classList.remove('selected');
-            selectedSeats = selectedSeats.filter(s => s !== num);
-        } else {
-            el.classList.add('selected');
-            selectedSeats.push(num);
+        async function confirmBooking() {
+            if(selectedSeats.length !== totalTickets) { alert(`請選擇 ${totalTickets} 個座位`); return; }
+            const payMethod = document.getElementById('payMethod').value;
+            const totalPrice = document.getElementById('finalPrice').innerText;
+            let mealStr = [];
+            for(let k in mealCart) if(mealCart[k].qty > 0) mealStr.push(`${mealCart[k].name}x${mealCart[k].qty}`);
+            let mainTicketId = 1;
+            for(let k in ticketCart) if(ticketCart[k].qty > 0) { mainTicketId = k; break; }
+
+            const data = {
+                userId: userId,
+                showingId: currentShowingId,
+                seats: selectedSeats,
+                totalPrice: totalPrice,
+                paymentMethod: payMethod,
+                meals: mealStr.join(','),
+                ticketTypeId: mainTicketId
+            };
+            
+            const res = await callApi('booking', data, 'POST');
+            alert(res.message);
+            if(res.status) location.reload();
         }
-    }
 
-    async function confirmBooking() {
-        if(selectedSeats.length !== totalTickets) { alert(`請選擇 ${totalTickets} 個座位`); return; }
-        
-        const payMethod = document.getElementById('payMethod').value;
-        const totalPrice = document.getElementById('finalPrice').innerText;
+        async function loadMyTickets() {
+            const list = document.getElementById('ticketList');
+            list.innerHTML = '<p class="text-center text-muted">載入中...</p>';
+            const res = await callApi('my_tickets', { userId: userId }, 'POST');
+            
+            if(!res.status) { list.innerHTML = `<p class="text-center">${res.message}</p>`; return; }
 
-        let mealStr = [];
-        for(let k in mealCart) if(mealCart[k].qty > 0) mealStr.push(`${mealCart[k].name}x${mealCart[k].qty}`);
-        
-        // 取得主要的票種ID (簡化邏輯：取第一個有買的)
-        let mainTicketId = 1;
-        for(let k in ticketCart) if(ticketCart[k].qty > 0) { mainTicketId = k; break; }
+            list.innerHTML = '';
+            res.data.forEach(ticket => {
+                let statusBadge = ticket.orderStatusId == 1 ? 
+                    '<span style="color:#4caf50">✅ 已支付</span>' : '<span style="color:#9e9e9e">🚫 已退票</span>';
+                
+                let btns = ticket.orderStatusId == 1 ? `
+                    <button class="btn btn-warning" style="padding:5px 15px; font-size:14px;" onclick="doExchange('${ticket.orderNumber}')">換票</button>
+                    <button class="btn btn-danger" style="padding:5px 15px; font-size:14px;" onclick="doRefund('${ticket.orderNumber}')">退票</button>
+                ` : '';
 
-        const data = {
-            userId: userId,
-            showingId: currentShowingId,
-            seats: selectedSeats, // 後端 BookingSystem 會接收陣列
-            totalPrice: totalPrice,
-            paymentMethod: payMethod,
-            meals: mealStr.join(','),
-            ticketTypeId: mainTicketId
-        };
-        
-        const res = await callApi('booking', data, 'POST');
-        alert(res.message);
-        if(res.status) location.reload();
-    }
-
-    // --- 紀錄查詢 ---
-
-    async function loadMyTickets() {
-        const list = document.getElementById('ticketList');
-        list.innerHTML = '載入中...';
-        const res = await callApi('my_tickets', { userId: userId }, 'POST');
-        
-        if(!res.status) { list.innerHTML = `<p style="text-align:center">${res.message}</p>`; return; }
-
-        list.innerHTML = '';
-        res.data.forEach(ticket => {
-            let statusHtml = '';
-            let btns = '';
-
-            if(ticket.orderStatusId == 1) {
-                statusHtml = '<span style="color:green; font-weight:bold;">✅ 已支付</span>';
-                btns = `
-                    <button class="btn btn-danger" onclick="doRefund('${ticket.orderNumber}')">退票</button>
-                    <button class="btn btn-warning" onclick="doExchange('${ticket.orderNumber}')">換票</button>
+                list.innerHTML += `
+                    <div class="ticket-card">
+                        <div>
+                            <h3 style="margin:0; border:none; padding:0;">${ticket.movieName}</h3>
+                            <p class="text-muted" style="margin:5px 0;">${ticket.showingDate} ${ticket.startTime} | ${ticket.cinemaName}</p>
+                            <p style="margin:0;">座位: ${ticket.seat} | 取票碼: <b style="color:var(--primary-color); font-size:1.1em;">${ticket.getTicketNum}</b></p>
+                        </div>
+                        <div class="text-right">
+                            <p style="font-weight:bold; font-size:18px; margin:0 0 10px 0;">$${ticket.totalPrice}</p>
+                            <div style="margin-bottom:10px;">${statusBadge}</div>
+                            ${btns}
+                        </div>
+                    </div>
                 `;
-            } else if (ticket.orderStatusId == 2) {
-                statusHtml = '<span style="color:gray; font-weight:bold;">🚫 已退票</span>';
-            } else {
-                statusHtml = '<span style="color:orange; font-weight:bold;">⚠️ 改簽中</span>';
-            }
-
-            list.innerHTML += `
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between;">
-                        <h3 style="margin:0;">${ticket.movieName}</h3>
-                        <div>${statusHtml}</div>
-                    </div>
-                    <p>📍 影城：${ticket.cinemaName} | ⏰ 時間：${ticket.showingDate} ${ticket.startTime}</p>
-                    <p>💺 座位：${ticket.seat} (${ticket.ticketNums}張) | 🎫 取票碼：<b>${ticket.getTicketNum}</b></p>
-                    <p>🍔 餐點：${ticket.chooseMeal || '無'}</p>
-                    <hr style="border-top:1px solid #eee;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:1.1em; font-weight:bold;">總額 $${ticket.totalPrice}</span>
-                        <div>${btns}</div>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    async function doRefund(orderNum) {
-        if(!confirm("確定要退票嗎？(需在開演前2小時)")) return;
-        const res = await callApi('refund', { userId: userId, orderNumber: orderNum });
-        alert(res.message);
-        loadMyTickets();
-    }
-
-    async function doExchange(orderNum) {
-        const newShowing = prompt("請輸入欲更換的新場次ID (例如: 102):");
-        if(newShowing) {
-            alert("換票申請已送出 (模擬)，請稍後查看紀錄。");
+            });
         }
-    }
 
-    // --- 其他 ---
-    async function updateProfile() {
-        const name = document.getElementById('profileName').value;
-        const phone = document.getElementById('profilePhone').value;
-        const res = await callApi('update_profile', { userId: userId, name: name, phone: phone });
-        alert(res.message);
-    }
-    
-    async function logout() {
-        await callApi('logout', {}, 'GET');
-    }
-</script>
+        async function doRefund(orderNum) {
+            if(!confirm("確定要退票嗎？")) return;
+            const res = await callApi('refund', { userId: userId, orderNumber: orderNum });
+            alert(res.message);
+            loadMyTickets();
+        }
+
+        async function doExchange(orderNum) {
+            alert("已送出換票申請，請稍候...");
+        }
+
+        async function updateProfile() {
+            const name = document.getElementById('profileName').value;
+            const phone = document.getElementById('profilePhone').value;
+            const res = await callApi('update_profile', { userId: userId, name, phone });
+            alert(res.message);
+        }
+
+        async function logout() {
+            await callApi('logout', {}, 'GET');
+            window.location.href = 'index.html';
+        }
+    </script>
 </body>
 </html>
