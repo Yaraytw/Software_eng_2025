@@ -3,7 +3,7 @@ class DbConnect {
     private $host = "localhost";
     private $db_name = "WeiYuCinema";
     private $username = "root";
-    private $password = "";
+    private $password = "202512";
     public $conn;
 
     public function getConnection() {
