@@ -2,36 +2,51 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>後台管理系統 - 威宇影城</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #eef; }
-        .box { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; }
-        input, select { padding: 8px; margin: 5px; }
-        button { padding: 8px 15px; cursor: pointer; background: #333; color: white; border: none; }
-    </style>
+    <title>後台管理 - 威宇影城</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>⚙️ 威宇影城 - 管理者後台</h1>
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">🎥 威宇影城 <span style="font-size:14px; color:#666; margin-left:10px;">Admin Panel</span></a>
+            <nav class="nav-links">
+                <a href="index.html">回前台首頁</a>
+            </nav>
+        </div>
+    </header>
 
-    <div class="box">
-        <h3>🎬 新增電影</h3>
-        <input type="text" id="mName" placeholder="電影名稱 (例如: 復仇者聯盟)">
-        <select id="mGrade">
-            <option value="1">普遍級</option>
-            <option value="2">保護級</option>
-            <option value="3">輔導級</option>
-            <option value="4">限制級</option>
-        </select>
-        <button onclick="addMovie()">新增</button>
-    </div>
+    <main class="container">
+        <h2 class="text-center" style="border:none;">⚙️ 管理者後台</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <!-- 新增電影 -->
+            <div class="section-box">
+                <h3>🎬 新增電影</h3>
+                <label>電影名稱</label>
+                <input type="text" id="mName" placeholder="例如: 復仇者聯盟">
+                <label>分級</label>
+                <select id="mGrade">
+                    <option value="1">普遍級</option>
+                    <option value="2">保護級</option>
+                    <option value="3">輔導級</option>
+                    <option value="4">限制級</option>
+                </select>
+                <button class="btn btn-primary" style="width:100%;" onclick="addMovie()">新增電影</button>
+            </div>
 
-    <div class="box">
-        <h3>📅 新增場次</h3>
-        <input type="text" id="sMovieId" placeholder="電影ID">
-        <input type="date" id="sDate">
-        <input type="time" id="sTime">
-        <button onclick="addShowing()">新增場次 (自動開啟20座位)</button>
-    </div>
+            <!-- 新增場次 -->
+            <div class="section-box">
+                <h3>📅 新增場次</h3>
+                <label>電影 ID</label>
+                <input type="text" id="sMovieId" placeholder="輸入 Movie ID">
+                <label>日期</label>
+                <input type="date" id="sDate">
+                <label>時間</label>
+                <input type="time" id="sTime">
+                <button class="btn btn-primary" style="width:100%;" onclick="addShowing()">新增場次</button>
+            </div>
+        </div>
+    </main>
 
     <script src="js/api.js"></script>
     <script>

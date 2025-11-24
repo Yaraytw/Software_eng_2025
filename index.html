@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>威宇影城 WeiYu Cinemas</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- 統一導覽列 -->
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">🎥 威宇影城</a>
+            <nav class="nav-links">
+                <a href="index.html">首頁</a>
+                <a href="login.html">會員登入/註冊</a>
+                <a href="admin.html">後台管理</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Banner 廣告區 -->
+    <div style="background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1920&q=80') center/cover; height: 450px; display: flex; align-items: center; justify-content: center; text-align: center;">
+        <div>
+            <h1 style="font-size: 48px; color: var(--primary-color); margin-bottom: 10px; text-shadow: 2px 2px 4px #000;">IMAX 震撼視聽</h1>
+            <p style="font-size: 20px; margin-bottom: 30px;">全台頂級影廳，給您身歷其境的感動</p>
+            <a href="login.html" class="btn btn-primary" style="padding: 15px 40px; font-size: 18px;">立即訂票</a>
+        </div>
+    </div>
+
+    <!-- 電影列表 -->
+    <main class="container">
+        <h2 style="text-align: center; border: none; font-size: 28px; margin-bottom: 40px;">🔥 現正熱映</h2>
+        
+        <div id="movieGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 30px;">
+            <p class="text-muted">正在載入電影資訊...</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 威宇影城 WeiYu Cinemas. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        // 載入首頁電影
+        async function loadHomeMovies() {
+            try {
+                const res = await callApi('get_movies', {}, 'GET');
+                const grid = document.getElementById('movieGrid');
+                
+                if (!res || res.length === 0) {
+                    grid.innerHTML = '<p class="text-center">目前沒有電影上映，請至後台新增。</p>';
+                    return;
+                }
+
+                grid.innerHTML = '';
+                res.forEach(m => {
+                    // 假圖處理
+                    const imgUrl = m.movieImg ? `img/${m.movieImg}` : 'https://placehold.co/300x450/222/fff?text=Movie';
+                    
+                    grid.innerHTML += `
+                        <div style="background: #1e1e1e; border-radius: 8px; overflow: hidden; transition: transform 0.3s; border: 1px solid #333;">
+                            <div style="height: 300px; overflow: hidden;">
+                                <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${m.movieName}">
+                            </div>
+                            <div style="padding: 15px;">
+                                <h3 style="font-size: 18px; margin: 0 0 10px 0; border: none; padding: 0;">${m.movieName}</h3>
+                                <p class="text-muted" style="font-size: 14px;">分級: ${m.gradeName || '普遍級'}</p>
+                                <a href="login.html" class="btn btn-primary" style="width: 100%; margin-top: 10px;">前往訂票</a>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                console.error(e);
+                document.getElementById('movieGrid').innerHTML = '<p>系統連線錯誤。</p>';
+            }
+        }
+        loadHomeMovies();
+    </script>
+</body>
+</html>
