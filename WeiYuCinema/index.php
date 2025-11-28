@@ -4,8 +4,9 @@
 // 1. 設定標頭，允許前端 AJAX 呼叫 (解決 CORS 問題)
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST, GET");
+header("Access-Control-Allow-Origin: *"); // 建議加上這行以允許跨域測試
 
-// 2. 引入所有子系統 (根據你的檔案列表)
+// 2. 引入所有子系統
 include_once 'DbConnect.php';
 include_once 'LoginSystem.php';
 include_once 'SignUpSystem.php';
@@ -14,7 +15,7 @@ include_once 'InquirySystem.php';
 include_once 'RefundSystem.php';
 include_once 'MemberSystem.php';
 include_once 'TopUpSystem.php';
-// include_once 'BrowseSystem.php'; // 如果有用到 BrowseSystem
+include_once 'AdminSystem.php'; // ★ 補上這行：後台管理系統
 
 // 3. 接收前端傳來的資料
 $method = $_SERVER['REQUEST_METHOD'];
@@ -53,15 +54,35 @@ try {
             $response = $sys->MainSign($inputData);
             break;
 
+        // ★ 補上：忘記密碼流程 (對應 forgot_password.html)
+        case 'get_hint':
+            $sys = new LoginSystem();
+            $response = $sys->ReturnHint($inputData['email']);
+            break;
+
+        case 'reset_password':
+            $sys = new LoginSystem();
+            // 注意參數順序需對應 ForgetPwdFlow($email, $hintId, $ans, $newPwd)
+            $result = $sys->ForgetPwdFlow(
+                $inputData['email'], 
+                $inputData['hintId'], 
+                $inputData['ans'], 
+                $inputData['newPwd']
+            );
+            if ($result) {
+                $response = ["status" => true, "message" => $result];
+            } else {
+                $response = ["status" => false, "message" => "驗證失敗或系統錯誤"];
+            }
+            break;
+
         // --- 訂票系統 (Booking) ---
         case 'get_movies':
             $sys = new BookingSystem();
             $data = $sys->SearchMovie(); // B2
-            $response = ["status" => true, "data" => $data]; // 轉成 API 格式
+            $response = ["status" => true, "data" => $data]; 
             break;
 
-        // 注意：dashboard.html 需要 get_dates, get_showings API
-        // 這裡示範補上，對應 BookingSystem 的 SearchDate/SearchShowing
         case 'get_dates':
             $sys = new BookingSystem();
             $data = $sys->SearchDate($inputData['movieId']);
@@ -80,20 +101,30 @@ try {
             $response = ["status" => true, "data" => $data];
             break;
 
+        // ★ 補上：前端 dashboard.html 需要的票種與餐點 API
+        case 'get_ticket_types':
+            $sys = new BookingSystem();
+            $data = $sys->GetTicketTypes();
+            $response = $data; // 前端預期直接回傳陣列
+            break;
+
+        case 'get_meals':
+            $sys = new BookingSystem();
+            $data = $sys->GetMeals();
+            $response = $data; // 前端預期直接回傳陣列
+            break;
+
         case 'booking': // 建立訂單
-            // 需要確認 Session 登入狀態 (這裡簡化略過)
             $sys = new BookingSystem();
             // 這裡需要從 inputData 提取參數
-            // $memberId, $showingId, $seats, $totalPrice, ...
-            // 為了測試方便，你可以先寫死 memberId 或從 inputData 傳入
             $response = $sys->CreateBooking(
-                $inputData['userId'], // dashboard.html 模擬的 userId
+                $inputData['userId'], 
                 $inputData['showingId'],
                 $inputData['seats'],
                 $inputData['totalPrice'],
-                'card', // 預設付款方式
-                '無餐點',
-                1 // 預設票種
+                $inputData['paymentMethod'], // 前端傳來的 'card' 或 'bank'
+                $inputData['meals'],
+                $inputData['ticketTypeId']
             );
             break;
 
@@ -112,6 +143,17 @@ try {
         case 'update_profile':
             $sys = new MemberChangeSystem();
             $response = $sys->MainMemberChange($inputData['userId'], $inputData);
+            break;
+
+        // --- ★ 補上：後台管理 (Admin) ---
+        case 'admin_add_movie':
+            $sys = new AdminSystem();
+            $response = $sys->AddMovie($inputData['name'], $inputData['grade']);
+            break;
+
+        case 'admin_add_showing':
+            $sys = new AdminSystem();
+            $response = $sys->AddShowing($inputData['movieId'], $inputData['date'], $inputData['time']);
             break;
             
         default:
